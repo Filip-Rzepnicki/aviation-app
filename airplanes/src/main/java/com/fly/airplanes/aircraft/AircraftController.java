@@ -1,77 +1,54 @@
-package com.fly.airplanes.aircraft;
+package com.fly.airplanes;
 
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
-@RequestMapping(path = "v1/aircraft")
+@RequestMapping("/v1/aircraft")
 public class AircraftController {
-    private final AircraftService aircraftService;
 
+    private final AircraftService service;
 
-    @Autowired
-    public AircraftController(AircraftService aircraftService){
-        this.aircraftService = aircraftService;
+    public AircraftController(AircraftService service) {
+        this.service = service;
     }
 
     @GetMapping
-    public List<Aircraft> getAircraft(
-            @RequestParam(required = false) String manufacturer,
-            @RequestParam(required = false) String icaoCode,
-            @RequestParam(required = false) String modelFaa,
-            @RequestParam(required = false) String engineClass){
-
-        if(manufacturer != null){
-            return aircraftService.getAircraftsFromManufacturer(manufacturer);
-        }
-        else if(icaoCode != null){
-            return aircraftService.getAircraftsByIcaoCode(icaoCode);
-        }
-        else if(modelFaa != null){
-            return aircraftService.getAircraftByModel(modelFaa);
-        }
-        else if(engineClass != null){
-            return aircraftService.getAircraftByEngineType(engineClass);
-        }
-        else{
-            return aircraftService.getAircrafts();
-        }
-
+    public List<Aircraft> getAllAircraft() {
+        return service.getAllAircraft();
     }
 
-    @GetMapping("/search")
-    public List<Aircraft> searchAircraft(@RequestParam String q){
-        return aircraftService.searchAircraft(q);
+    @GetMapping("/{icaoCode}")
+    public Aircraft getAircraft(@PathVariable String icaoCode) {
+        return service.getAircraftByIcao(icaoCode);
     }
-
 
     @PostMapping
-    public ResponseEntity<Aircraft> addPlayer(@RequestBody Aircraft aircraft){
-        Aircraft createdAircraft = aircraftService.addAircraft(aircraft);
-        return new ResponseEntity<>(createdAircraft, HttpStatus.CREATED);
+    public ResponseEntity<Aircraft> createAircraft(@RequestBody Aircraft aircraft) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.saveAircraft(aircraft));
     }
 
-    @PutMapping
-    public ResponseEntity<Aircraft> updateAircraft(@RequestBody Aircraft aircraft){
-        Aircraft resultAircraft = aircraftService.updateAircraft(aircraft);
-        if(resultAircraft != null){
-            return new ResponseEntity<>(resultAircraft, HttpStatus.OK);
-        }
-        else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @PutMapping("/{icaoCode}")
+    public Aircraft updateAircraft(
+            @PathVariable String icaoCode,
+            @RequestBody Aircraft aircraft
+    ) {
+        return service.updateAircraft(icaoCode, aircraft);
     }
 
     @DeleteMapping("/{icaoCode}")
-    public ResponseEntity<String> deletePlayer(@PathVariable String icaoCode){
-        aircraftService.deleteAircraft(icaoCode);
-        return new ResponseEntity<>("Aircraft deleted sucessfully", HttpStatus.OK);
+    public ResponseEntity<Void> deleteAircraft(@PathVariable String icaoCode) {
+        service.deleteAircraft(icaoCode);
+        return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/search")
+    public Set<Aircraft> searchAircraft(@RequestParam String q) {
+        return service.searchAircraft(q);
+    }
 }

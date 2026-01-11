@@ -1,14 +1,18 @@
-package com.fly.airplanes.aircraft;
-
+package com.fly.airplanes;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 
-@Repository
-public interface Aircraft_Repository extends JpaRepository<Aircraft, String> {
+public interface AircraftRepository extends JpaRepository<Aircraft, String> {
 
-    void deleteByIcaoCode(String aircraftIcaoCode);
-    Optional<Aircraft> findByIcaoCode(String icaoCode);
+    Aircraft findByIcaoCode(String icaoCode);
+
+    void deleteByIcaoCode(String icaoCode);
+
+    List<Aircraft> findByManufacturerContainingIgnoreCase(String query);
+
+    List<Aircraft> findByModelContainingIgnoreCase(String query);
+
+    List<Aircraft> findByAircraftTypeContainingIgnoreCase(String query);
 }
